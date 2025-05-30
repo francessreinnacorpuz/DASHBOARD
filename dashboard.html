@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Insightful Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+  :root {
+    --primary: #5563de;
+    --primary-light: #818de9;
+    --background: #f5f7ff;
+    --card-bg: #fff;
+    --text-color: #2c3e50;
+    --text-muted: #7a8aaf;
+    --border-radius: 12px;
+    --shadow: rgba(85, 99, 222, 0.15);
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--text-color);
+    display: flex;
+    min-height: 100vh;
+  }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  /* Sidebar */
+  .sidebar {
+    width: 260px;
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 15px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    padding: 30px 20px;
+    border-radius: 0 20px 20px 0;
+  }
+  .sidebar h2 {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin-bottom: 40px;
+    user-select: none;
+  }
+  .nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+  }
+  .nav li {
+    margin-bottom: 24px;
+  }
+  .nav li a {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    border-radius: 10px;
+    padding: 10px 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .nav li a:hover,
+  .nav li a.active {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+  .nav li a svg {
+    margin-right: 14px;
+    stroke-width: 2;
+  }
+  /* Main content */
+  .main-content {
+    flex: 1;
+    padding: 30px 40px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  header h1 {
+    font-weight: 700;
+    font-size: 2rem;
+    margin: 0;
+    user-select: none;
+  }
+  .user-avatar {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    cursor: default;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  /* Cards */
+  .cards {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .card {
+    background: var(--card-bg);
+    padding: 24px 28px;
+    border-radius: var(--border-radius);
+    flex: 1 1 220px;
+    box-shadow: 0 6px 20px var(--shadow);
+    color: var(--primary);
+  }
+  .card h3 {
+    margin: 0 0 10px 0;
+    font-weight: 700;
+    font-size: 1.3rem;
+  }
+  .card p {
+    font-weight: 600;
+    font-size: 2.4rem;
+    margin: 0;
+    color: var(--text-color);
+    user-select: all;
+  }
+  .card .desc {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  /* Charts container */
+  .charts {
+    background: var(--card-bg);
+    padding: 20px 28px 28px 28px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 6px 20px var(--shadow);
+  }
+  .chart-container {
+    margin-bottom: 40px;
+  }
+  .chart-container h3 {
+    margin-bottom: 18px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  canvas {
+    max-width: 100%;
+  }
+  /* Responsive */
+  @media (max-width: 900px) {
+    body {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+      flex-direction: row;
+      border-radius: 0;
+      padding: 16px 20px;
+    }
+    .sidebar h2 {
+      margin-bottom: 0;
+      margin-right: 30px;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      align-self: center;
+    }
+    .nav {
+      display: flex;
+      gap: 20px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .nav li {
+      margin-bottom: 0;
+    }
+    .nav li a {
+      padding: 8px 12px;
+      font-size: 1rem;
+    }
+    .main-content {
+      padding: 20px;
+    }
+    .cards {
+      flex-direction: column;
+      gap: 20px;
+    }
+    .card {
+      flex: 1 1 auto;
+    }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="sidebar" aria-label="Sidebar Navigation">
+    <h2>InsightDash</h2>
+    <ul class="nav" role="menu" aria-orientation="vertical">
+      <li role="none">
+        <a href="#" class="active" role="menuitem" tabindex="0" aria-current="page" title="Dashboard">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zM3 21h8v-6H3v6zM13 21h8v-10h-8v10zM13 3v6h8V3h-8z"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li role="none">
+        <a href="#" role="menuitem" tabindex="-1" title="Analytics">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 20v-6m0 0v-4m0 4H8m4 0h4m-6-6v2"/></svg>
+          Analytics
+        </a>
+      </li>
+      <li role="none">
+        <a href="#" role="menuitem" tabindex="-1" title="Settings">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .1-2l2.1-1.8-2-3.5-2.8-1a1.7 1.7 0 0 0-2-1.2L12 3l-2.7 2.6a1.7 1.7 0 0 0-2 1.3l-2.7 1-2 3.8 2.1 1.7a1.74 1.74 0 0 0 .2 2l-1.6 2.9 4 4z"/></svg>
+          Settings
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <main class="main-content" role="main" aria-label="Dashboard main content">
+    <header>
+      <h1>Dashboard</h1>
+      <div class="user-avatar" aria-label="User avatar" title="JD">JD</div>
+    </header>
+
+    <section class="cards" aria-label="Key metrics">
+      <article class="card" tabindex="0" aria-describedby="total-users-desc">
+        <h3 id="total-users">12,345</h3>
+        <p id="total-users-desc" class="desc">Total Users</p>
+      </article>
+
+      <article class="card" tabindex="0" aria-describedby="monthly-revenue-desc">
+        <h3 id="monthly-revenue">$76,890</h3>
+        <p id="monthly-revenue-desc" class="desc">Monthly Revenue</p>
+      </article>
+
+      <article class="card" tabindex="0" aria-describedby="active-users-desc">
+        <h3 id="active-users">1,256</h3>
+        <p id="active-users-desc" class="desc">Active Users</p>
+      </article>
+
+      <article class="card" tabindex="0" aria-describedby="new-signups-desc">
+        <h3 id="new-signups">342</h3>
+        <p id="new-signups-desc" class="desc">New Signups This Month</p>
+      </article>
+    </section>
+
+    <section class="charts">
+      <div class="chart-container" role="region" aria-label="User Growth Over Time">
+        <h3>User Growth Over Time</h3>
+        <canvas id="userGrowthChart" aria-describedby="userGrowthDesc"></canvas>
+        <p id="userGrowthDesc" class="visually-hidden">Line chart showing increasing user growth over the past 12 months.</p>
+      </div>
+
+      <div class="chart-container" role="region" aria-label="Revenue by Product Category">
+        <h3>Revenue by Product Category</h3>
+        <canvas id="revenueChart" aria-describedby="revenueDesc"></canvas>
+        <p id="revenueDesc" class="visually-hidden">Bar chart showing revenue per product category for current year.</p>
+      </div>
+    </section>
+  </main>
+
+  <style>
+    .visually-hidden {
+      position: absolute !important;
+      height: 1px; width: 1px;
+      overflow: hidden;
+      clip: rect(1px, 1px, 1px, 1px);
+      white-space: nowrap;
+    }
+  </style>
+
+<script>
+  // User growth data for last 12 months
+  const months = [
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'
+  ];
+  const userGrowth = [900, 1100, 1250, 1400, 1580, 1750, 1970, 2100, 2300, 2550, 2800, 3100];
+
+  const ctxUser = document.getElementById('userGrowthChart').getContext('2d');
+  const userGrowthChart = new Chart(ctxUser, {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Users',
+        data: userGrowth,
+        fill: true,
+        backgroundColor: 'rgba(85, 99, 222, 0.3)',
+        borderColor: 'rgba(85, 99, 222, 1)',
+        borderWidth: 3,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: false,
+          ticks: {
+            color: '#5563DE',
+            font: {weight: '600'},
+            stepSize: 500
+          },
+          grid: {
+            color: '#eee'
+          }
+        },
+        x: {
+          ticks: {
+            color: '#5563DE',
+            font: {weight: '600'}
+          },
+          grid: {
+            color: '#eee'
+          }
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#33475b',
+            font: {weight: 'bold', size: 14}
+          }
+        },
+        tooltip: {
+          backgroundColor: '#5563DE',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          cornerRadius: 6
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        intersect: false
+      }
+    }
+  });
+
+  // Revenue by category data
+  const categories = ['Software', 'Hardware', 'Services', 'Support'];
+  const revenue = [35000, 18000, 12000, 8000];
+  const colors = ['#5563DE', '#7491E1', '#A1B1F4', '#C3CCF9'];
+
+  const ctxRevenue = document.getElementById('revenueChart').getContext('2d');
+  const revenueChart = new Chart(ctxRevenue, {
+    type: 'bar',
+    data: {
+      labels: categories,
+      datasets: [{
+        label: 'Revenue ($)',
+        data: revenue,
+        backgroundColor: colors,
+        borderRadius: 12,
+        maxBarThickness: 40,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: '#5563DE',
+            font: {weight: '600'},
+            stepSize: 10000
+          },
+          grid: {
+            color: '#eee'
+          }
+        },
+        x: {
+          ticks: {
+            color: '#5563DE',
+            font: {weight: '600'}
+          },
+          grid: {
+            display: false
+          }
+        },
+      },
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: '#5563DE',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          cornerRadius: 6
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
+
